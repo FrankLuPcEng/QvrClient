@@ -47,4 +47,4 @@ jobs:
         run: dotnet restore
 
       - name: Run integration tests
-        run: dotnet test QvrProClient.IntegrationTests/QvrProClient.IntegrationTests.csproj
+        run: dotnet test QvrProClient.sln
