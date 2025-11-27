@@ -10,4 +10,8 @@ public record QvrCameraInfo
     public string? Name { get; init; }
 
     public string? Channel { get; init; }
+
+    public string? Ip { get; init; }
+
+    public string? Url { get; init; }
 }

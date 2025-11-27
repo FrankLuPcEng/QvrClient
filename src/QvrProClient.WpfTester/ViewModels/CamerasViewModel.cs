@@ -1,32 +1,49 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using QvrProClient.Models;
-using QvrProClient.WpfTester.Services;
+using QvrProClient;
 
 namespace QvrProClient.WpfTester.ViewModels;
 
 public class CamerasViewModel : ViewModelBase
 {
-    private readonly QvrClientFactory _clientFactory;
     private readonly Action<string> _log;
+    private IQvrProClient? _client;
 
-    public CamerasViewModel(QvrClientFactory clientFactory, Action<string> log)
+    public CamerasViewModel(Action<string> log, IQvrProClient? client = null)
     {
-        _clientFactory = clientFactory;
         _log = log;
-        Cameras = new ObservableCollection<QvrCameraInfo>();
+        _client = client;
+        Cameras = new ObservableCollection<CameraViewModel>();
 
-        LoadCamerasCommand = new RelayCommand(LoadCamerasAsync);
+        LoadCamerasCommand = new RelayCommand(LoadCamerasAsync, CanLoadCameras);
     }
 
-    public ObservableCollection<QvrCameraInfo> Cameras { get; }
+    public ObservableCollection<CameraViewModel> Cameras { get; }
 
     public RelayCommand LoadCamerasCommand { get; }
 
+    public IQvrProClient? Client
+    {
+        get => _client;
+        set
+        {
+            if (SetProperty(ref _client, value))
+            {
+                LoadCamerasCommand.RaiseCanExecuteChanged();
+                if (_client is null)
+                {
+                    Cameras.Clear();
+                }
+            }
+        }
+    }
+
+    private bool CanLoadCameras() => Client is not null;
+
     private async Task LoadCamerasAsync()
     {
-        var client = _clientFactory.Client;
+        var client = Client;
         if (client is null)
         {
             _log("No client configured. Please login first.");
@@ -36,10 +53,10 @@ public class CamerasViewModel : ViewModelBase
         try
         {
             Cameras.Clear();
-            var items = await client.GetCamerasAsync().ConfigureAwait(false);
+            var items = await client.GetCamerasAsync();
             foreach (var camera in items)
             {
-                Cameras.Add(camera);
+                Cameras.Add(new CameraViewModel(camera));
             }
 
             _log($"Loaded {Cameras.Count} camera(s).");

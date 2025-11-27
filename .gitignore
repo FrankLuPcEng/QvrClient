@@ -1,0 +1,44 @@
+# Build output
+bin/
+obj/
+**/bin/
+**/obj/
+artifacts/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.csproj.user
+*.vbproj.user
+*.vscode/
+.idea/
+
+# NuGet
+packages/
+*.nupkg
+project.lock.json
+project.fragment.lock.json
+
+# Logs and temp
+*.log
+*.tmp
+*.pid
+*.svclog
+*.userprefs
+
+# Generated files
+*.g.cs
+*.g.i.cs
+*_i.c
+*_p.c
+*_h.h
+*.dbmdl
+*.jfm
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.swp
+*~

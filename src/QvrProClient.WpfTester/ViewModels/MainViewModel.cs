@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Text;
 using QvrProClient.WpfTester.Services;
 
@@ -13,8 +14,9 @@ public class MainViewModel : ViewModelBase
     public MainViewModel()
     {
         LoginViewModel = new LoginViewModel(_clientFactory, AppendLog);
-        CamerasViewModel = new CamerasViewModel(_clientFactory, AppendLog);
+        CamerasViewModel = new CamerasViewModel(AppendLog);
         PlaybackViewModel = new PlaybackViewModel(_clientFactory, AppendLog);
+        LoginViewModel.PropertyChanged += LoginViewModelOnPropertyChanged;
     }
 
     public LoginViewModel LoginViewModel { get; }
@@ -33,5 +35,13 @@ public class MainViewModel : ViewModelBase
     {
         _logBuilder.AppendLine($"[{DateTime.Now:HH:mm:ss}] {message}");
         LogText = _logBuilder.ToString();
+    }
+
+    private void LoginViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(LoginViewModel.IsLoggedIn))
+        {
+            CamerasViewModel.Client = LoginViewModel.IsLoggedIn ? _clientFactory.Client : null;
+        }
     }
 }

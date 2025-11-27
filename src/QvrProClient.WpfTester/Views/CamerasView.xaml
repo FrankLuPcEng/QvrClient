@@ -5,12 +5,15 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d">
     <DockPanel Margin="8">
-        <Button Content="Get Cameras" Command="{Binding LoadCamerasCommand}" Width="120" Margin="0,0,0,8" DockPanel.Dock="Top" />
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
+            <Button Content="Load Cameras" Command="{Binding LoadCamerasCommand}" Width="140" />
+        </StackPanel>
         <DataGrid ItemsSource="{Binding Cameras}" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="*" />
+                <DataGridTextColumn Header="Camera Id" Binding="{Binding CameraId}" Width="2*" />
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="2*" />
-                <DataGridTextColumn Header="Channel" Binding="{Binding Channel}" Width="*" />
+                <DataGridTextColumn Header="Channel Id" Binding="{Binding ChannelId}" Width="*" />
+                <DataGridTextColumn Header="IP / URL" Binding="{Binding IpOrUrl}" Width="2*" />
             </DataGrid.Columns>
         </DataGrid>
     </DockPanel>
