@@ -15,7 +15,7 @@ public class MainViewModel : ViewModelBase
     {
         LoginViewModel = new LoginViewModel(_clientFactory, AppendLog);
         CamerasViewModel = new CamerasViewModel(AppendLog);
-        PlaybackViewModel = new PlaybackViewModel(_clientFactory, AppendLog);
+        PlaybackViewModel = new PlaybackViewModel(AppendLog);
         LoginViewModel.PropertyChanged += LoginViewModelOnPropertyChanged;
     }
 
@@ -42,6 +42,7 @@ public class MainViewModel : ViewModelBase
         if (e.PropertyName == nameof(LoginViewModel.IsLoggedIn))
         {
             CamerasViewModel.Client = LoginViewModel.IsLoggedIn ? _clientFactory.Client : null;
+            PlaybackViewModel.Client = LoginViewModel.IsLoggedIn ? _clientFactory.Client : null;
         }
     }
 }

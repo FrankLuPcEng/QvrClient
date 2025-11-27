@@ -27,7 +27,7 @@
 
         <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2">
             <Button Content="Open Playback" Command="{Binding OpenPlaybackCommand}" Width="140" HorizontalAlignment="Left" Margin="0,0,0,8" />
-            <TextBox Text="{Binding PlaybackInfo}" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Height="120" />
+            <TextBox Text="{Binding ResultText}" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Height="120" />
         </StackPanel>
     </Grid>
 </UserControl>

@@ -81,7 +81,12 @@ public class QvrProClient : IQvrProClient
     {
         EnsureAuthenticated();
         // TODO: call /qvrpro/apis/qplay.cgi and parse session id/stream info.
-        var session = new QplaySession { SessionId = Guid.NewGuid().ToString("N"), StreamUri = null };
+        var session = new QplaySession
+        {
+            SessionId = Guid.NewGuid().ToString("N"),
+            StreamUri = null,
+            StatusCode = HttpStatusCode.OK
+        };
         return Task.FromResult(session);
     }
 

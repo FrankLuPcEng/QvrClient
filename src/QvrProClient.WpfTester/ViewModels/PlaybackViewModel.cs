@@ -1,30 +1,32 @@
-using QvrProClient.Models;
-using QvrProClient.WpfTester.Services;
+using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+using QvrProClient;
+using QvrProClient.Models;
 
 namespace QvrProClient.WpfTester.ViewModels;
 
 public class PlaybackViewModel : ViewModelBase
 {
-    private readonly QvrClientFactory _clientFactory;
     private readonly Action<string> _log;
-    private QvrCameraInfo? _selectedCamera;
+    private IQvrProClient? _client;
+    private CameraViewModel? _selectedCamera;
     private string _startTimeText = DateTimeOffset.UtcNow.AddMinutes(-5).ToString("o");
     private string _endTimeText = DateTimeOffset.UtcNow.ToString("o");
-    private string _playbackInfo = string.Empty;
+    private string _resultText = string.Empty;
 
-    public PlaybackViewModel(QvrClientFactory clientFactory, Action<string> log)
+    public PlaybackViewModel(Action<string> log, IQvrProClient? client = null)
     {
-        _clientFactory = clientFactory;
         _log = log;
-        Cameras = new ObservableCollection<QvrCameraInfo>();
+        _client = client;
+        Cameras = new ObservableCollection<CameraViewModel>();
 
-        OpenPlaybackCommand = new RelayCommand(OpenPlaybackAsync);
+        OpenPlaybackCommand = new RelayCommand(OpenPlaybackAsync, CanOpenPlayback);
     }
 
-    public ObservableCollection<QvrCameraInfo> Cameras { get; }
+    public ObservableCollection<CameraViewModel> Cameras { get; }
 
-    public QvrCameraInfo? SelectedCamera
+    public CameraViewModel? SelectedCamera
     {
         get => _selectedCamera;
         set => SetProperty(ref _selectedCamera, value);
@@ -42,74 +44,113 @@ public class PlaybackViewModel : ViewModelBase
         set => SetProperty(ref _endTimeText, value);
     }
 
-    public string PlaybackInfo
+    public string ResultText
     {
-        get => _playbackInfo;
-        set => SetProperty(ref _playbackInfo, value);
+        get => _resultText;
+        set => SetProperty(ref _resultText, value);
     }
 
     public RelayCommand OpenPlaybackCommand { get; }
 
-    private async Task OpenPlaybackAsync()
+    public IQvrProClient? Client
     {
-        var client = _clientFactory.Client;
-        if (client is null)
+        get => _client;
+        set
         {
-            _log("No client configured. Please login first.");
-            return;
-        }
-
-        if (!DateTimeOffset.TryParse(StartTimeText, out var start))
-        {
-            PlaybackInfo = "Invalid start time";
-            return;
-        }
-
-        if (!DateTimeOffset.TryParse(EndTimeText, out var end))
-        {
-            PlaybackInfo = "Invalid end time";
-            return;
-        }
-
-        if (SelectedCamera is null)
-        {
-            // refresh list if empty
-            if (Cameras.Count == 0)
+            if (SetProperty(ref _client, value))
             {
-                await LoadCamerasAsync(client).ConfigureAwait(false);
+                OpenPlaybackCommand.RaiseCanExecuteChanged();
+                if (_client is null)
+                {
+                    Cameras.Clear();
+                    SelectedCamera = null;
+                }
+                else
+                {
+                    _ = LoadCamerasAsync();
+                }
             }
-
-            PlaybackInfo = "Please select a camera.";
-            return;
-        }
-
-        try
-        {
-            var session = await client.OpenPlaybackAsync(SelectedCamera.Id, start, end).ConfigureAwait(false);
-            PlaybackInfo = $"Session: {session.SessionId}\nStream: {session.StreamUri.ToString() ?? "(none)"}";
-            _log($"Opened playback for camera {SelectedCamera.Name ?? SelectedCamera.Id}");
-        }
-        catch (Exception ex)
-        {
-            PlaybackInfo = ex.Message;
-            _log($"Open playback failed: {ex.Message}");
         }
     }
 
-    private async Task LoadCamerasAsync(IQvrProClient client)
+    private bool CanOpenPlayback() => Client is not null;
+
+    private async Task LoadCamerasAsync()
     {
+        var client = Client;
+        if (client is null)
+        {
+            return;
+        }
+
         try
         {
-            Cameras.Clear();
             var items = await client.GetCamerasAsync().ConfigureAwait(false);
+            Cameras.Clear();
             foreach (var camera in items)
             {
-                Cameras.Add(camera);
+                Cameras.Add(new CameraViewModel(camera));
+            }
+
+            if (SelectedCamera is null && Cameras.Count > 0)
+            {
+                SelectedCamera = Cameras[0];
             }
         }
         catch (Exception ex)
         {
             _log($"Unable to load cameras: {ex.Message}");
+        }
+    }
+
+    private async Task OpenPlaybackAsync()
+    {
+        var client = Client;
+        if (client is null)
+        {
+            ResultText = "No client configured. Please login first.";
+            _log(ResultText);
+            return;
+        }
+
+        if (!DateTimeOffset.TryParse(StartTimeText, out var start))
+        {
+            ResultText = "Invalid start time format.";
+            return;
+        }
+
+        if (!DateTimeOffset.TryParse(EndTimeText, out var end))
+        {
+            ResultText = "Invalid end time format.";
+            return;
+        }
+
+        if (SelectedCamera is null)
+        {
+            if (Cameras.Count == 0)
+            {
+                await LoadCamerasAsync().ConfigureAwait(false);
+            }
+
+            if (SelectedCamera is null)
+            {
+                ResultText = "Please select a camera.";
+                return;
+            }
+        }
+
+        try
+        {
+            var session = await client.OpenPlaybackAsync(SelectedCamera.CameraId, start, end).ConfigureAwait(false);
+            var status = session.StatusCode?.ToString() ?? "N/A";
+            var stream = session.StreamUri?.ToString() ?? "(none)";
+            ResultText = $"Status: {status}\nSession: {session.SessionId}\nStream: {stream}";
+            _log($"Opened playback for camera {SelectedCamera.Name} [{SelectedCamera.CameraId}]");
+        }
+        catch (Exception ex)
+        {
+            ResultText = $"Open playback failed: {ex.Message}";
+            _log(ResultText);
         }
     }
 }
