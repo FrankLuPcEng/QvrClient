@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using QvrProClient.Options;
 using QvrProClient.WpfTester.Services;
 
