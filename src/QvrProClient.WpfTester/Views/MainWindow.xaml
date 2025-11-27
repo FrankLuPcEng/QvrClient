@@ -1,0 +1,37 @@
+<Window x:Class="QvrProClient.WpfTester.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:QvrProClient.WpfTester.Views"
+        mc:Ignorable="d"
+        Title="QVR Pro Client Tester" Height="600" Width="900">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="180" />
+        </Grid.RowDefinitions>
+
+        <TabControl Grid.Row="0">
+            <TabItem Header="Login">
+                <views:LoginView DataContext="{Binding LoginViewModel}" />
+            </TabItem>
+            <TabItem Header="Cameras">
+                <views:CamerasView DataContext="{Binding CamerasViewModel}" />
+            </TabItem>
+            <TabItem Header="Playback">
+                <views:PlaybackView DataContext="{Binding PlaybackViewModel}" />
+            </TabItem>
+        </TabControl>
+
+        <GroupBox Grid.Row="1" Header="Log" Margin="8,4,8,8">
+            <TextBox Text="{Binding LogText, UpdateSourceTrigger=PropertyChanged}"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     VerticalScrollBarVisibility="Auto"
+                     IsReadOnly="True"
+                     Background="Black"
+                     Foreground="LightGray" />
+        </GroupBox>
+    </Grid>
+</Window>
