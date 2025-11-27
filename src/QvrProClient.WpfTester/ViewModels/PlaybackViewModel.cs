@@ -1,9 +1,6 @@
-using System;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using QvrProClient;
 using QvrProClient.Models;
 using QvrProClient.WpfTester.Services;
+using System.Collections.ObjectModel;
 
 namespace QvrProClient.WpfTester.ViewModels;
 
@@ -89,7 +86,7 @@ public class PlaybackViewModel : ViewModelBase
         try
         {
             var session = await client.OpenPlaybackAsync(SelectedCamera.Id, start, end).ConfigureAwait(false);
-            PlaybackInfo = $"Session: {session.SessionId}\nStream: {session.StreamUri ?? "(none)"}";
+            PlaybackInfo = $"Session: {session.SessionId}\nStream: {session.StreamUri.ToString() ?? "(none)"}";
             _log($"Opened playback for camera {SelectedCamera.Name ?? SelectedCamera.Id}");
         }
         catch (Exception ex)
